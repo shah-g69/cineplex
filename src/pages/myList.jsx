@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import Navbar from "../components/Navbar";
-import ShowCard from "../components/ShowCard";
+import ShowCard from "../components/Showcard";
+import FilterBar from "../components/FilterBar";
+import { useFilters } from "../hooks/useFilters";
 
 import {
   getMyList,
@@ -9,16 +11,27 @@ import {
 } from "../utils/myList";
 
 function MyList() {
-  const [shows, setShows] = useState([]);
+  const [shows, setShows] = useState(() =>
+    getMyList()
+  );
 
-  useEffect(() => {
-    setShows(getMyList());
-  }, []);
+  const {
+    filters,
+    options,
+    filtered,
+    activeCount,
+    activeFilters,
+    toggleGenre,
+    updateFilter,
+    removeFilter,
+    resetFilters,
+  } = useFilters(shows);
 
   function handleRemove(id) {
     const updatedList = removeFromMyList(id);
 
     setShows(updatedList);
+    resetFilters();
   }
 
   return (
@@ -28,6 +41,17 @@ function MyList() {
       <main className="my-list-page">
 
         <h1>My List</h1>
+
+        <FilterBar
+          options={options}
+          filters={filters}
+          activeCount={activeCount}
+          activeFilters={activeFilters}
+          onToggleGenre={toggleGenre}
+          onChange={updateFilter}
+          onRemoveFilter={removeFilter}
+          onReset={resetFilters}
+        />
 
         {shows.length === 0 && (
           <div className="empty-list">
@@ -42,10 +66,16 @@ function MyList() {
           </div>
         )}
 
-        {shows.length > 0 && (
+        {shows.length > 0 && filtered.length === 0 && (
+          <p className="no-results">
+            No shows match your filters.
+          </p>
+        )}
+
+        {shows.length > 0 && filtered.length > 0 && (
           <div className="my-list-grid">
 
-            {shows.map((show) => (
+            {filtered.map((show) => (
               <div
                 className="my-list-item"
                 key={show.id}

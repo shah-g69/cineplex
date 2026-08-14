@@ -6,18 +6,27 @@ import {
   Info,
 } from "lucide-react";
 
-import TrailerPlayer from "./TrailerPlayer";
+import { useNavigate } from "react-router-dom";
+
+import { useTrailer } from "../context/TrailerContext";
 
 function Hero({ shows = [] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isTrailerOpen, setIsTrailerOpen] = useState(false);
+
+  const navigate = useNavigate();
+
+  const { playTrailer, isOpen } = useTrailer();
+
+  function handlePlay() {
+    playTrailer(show);
+  }
 
   const heroShows = shows
     .filter((show) => show.image?.original)
     .slice(0, 5);
 
   useEffect(() => {
-    if (heroShows.length <= 1) {
+    if (heroShows.length <= 1 || isOpen) {
       return;
     }
 
@@ -30,7 +39,7 @@ function Hero({ shows = [] }) {
     }, 7000);
 
     return () => clearInterval(interval);
-  }, [heroShows.length]);
+  }, [heroShows.length, isOpen]);
 
   if (heroShows.length === 0) {
     return null;
@@ -68,6 +77,17 @@ function Hero({ shows = [] }) {
           backgroundImage: `url(${show.image.original})`,
         }}
       >
+        <div className="hero-gradient" />
+
+        {show.image?.poster && (
+          <div
+            className="hero-poster"
+            style={{
+              backgroundImage: `url(${show.image.poster})`,
+            }}
+          />
+        )}
+
         <div className="hero-overlay">
 
           <div className="hero-content">
@@ -102,7 +122,7 @@ function Hero({ shows = [] }) {
 
               <button
                 className="play-button"
-                onClick={() => setIsTrailerOpen(true)}
+                onClick={handlePlay}
               >
                 <Play
                   size={18}
@@ -111,7 +131,12 @@ function Hero({ shows = [] }) {
                 Play
               </button>
 
-              <button className="info-button">
+              <button
+                className="info-button"
+                onClick={() =>
+                  navigate(`/show/${show.id}`)
+                }
+              >
                 <Info size={18} />
                 More Info
               </button>
@@ -158,10 +183,6 @@ function Hero({ shows = [] }) {
         </div>
       </section>
 
-      <TrailerPlayer
-      videoUrl={show.trailer}     
-       onClose={() => setIsTrailerOpen(false)}
-      />
     </>
   );
 }

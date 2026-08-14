@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
-import ShowCard from "../components/ShowCard";
+import ShowCard from "../components/Showcard";
+import FilterBar from "../components/FilterBar";
+import { useFilters } from "../hooks/useFilters";
+import { searchShows } from "../services/api";
 
 function Search() {
   const [searchParams] = useSearchParams();
@@ -13,8 +16,20 @@ function Search() {
 
   const [loading, setLoading] = useState(true);
 
+  const {
+    filters,
+    options,
+    filtered,
+    activeCount,
+    activeFilters,
+    toggleGenre,
+    updateFilter,
+    removeFilter,
+    resetFilters,
+  } = useFilters(results);
+
   useEffect(() => {
-    async function searchShows() {
+    async function runSearch() {
       if (!query) {
         setResults([]);
         setLoading(false);
@@ -24,17 +39,7 @@ function Search() {
       try {
         setLoading(true);
 
-        const response = await fetch(
-          `https://api.tvmaze.com/search/shows?q=${encodeURIComponent(
-            query
-          )}`
-        );
-
-        const data = await response.json();
-
-        const shows = data.map(
-          (item) => item.show
-        );
+        const shows = await searchShows(query);
 
         setResults(shows);
       } catch (error) {
@@ -44,7 +49,7 @@ function Search() {
       }
     }
 
-    searchShows();
+    runSearch();
   }, [query]);
 
   return (
@@ -56,6 +61,17 @@ function Search() {
         <h1>
           Search results for "{query}"
         </h1>
+
+        <FilterBar
+          options={options}
+          filters={filters}
+          activeCount={activeCount}
+          activeFilters={activeFilters}
+          onToggleGenre={toggleGenre}
+          onChange={updateFilter}
+          onRemoveFilter={removeFilter}
+          onReset={resetFilters}
+        />
 
         {loading && (
           <div className="loading">
@@ -69,10 +85,16 @@ function Search() {
           </p>
         )}
 
-        {!loading && results.length > 0 && (
+        {!loading && results.length > 0 && filtered.length === 0 && (
+          <p className="no-results">
+            No shows match your filters.
+          </p>
+        )}
+
+        {!loading && filtered.length > 0 && (
           <div className="search-grid">
 
-            {results.map((show) => (
+            {filtered.map((show) => (
               <ShowCard
                 key={show.id}
                 show={show}

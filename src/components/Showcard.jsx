@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Play,
   Plus,
@@ -12,11 +12,16 @@ import {
   removeFromMyList,
   isInMyList,
 } from "../utils/myList";
+import { useTrailer } from "../context/TrailerContext";
 
 function ShowCard({ show }) {
   const [saved, setSaved] = useState(
     isInMyList(show.id)
   );
+
+  const { playTrailer } = useTrailer();
+
+  const navigate = useNavigate();
 
   function handleMyList(event) {
     event.preventDefault();
@@ -52,7 +57,12 @@ function ShowCard({ show }) {
 
               <button
                 className="card-play"
-                aria-label="Play"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  playTrailer(show);
+                }}
+                aria-label="Play trailer"
               >
                 <Play
                   size={16}
@@ -72,13 +82,17 @@ function ShowCard({ show }) {
                 )}
               </button>
 
-              <Link
-                to={`/show/${show.id}`}
+              <button
                 className="card-icon"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  navigate(`/show/${show.id}`);
+                }}
                 aria-label="More Info"
               >
                 <Info size={17} />
-              </Link>
+              </button>
 
             </div>
 

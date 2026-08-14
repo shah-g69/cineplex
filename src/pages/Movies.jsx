@@ -1,30 +1,33 @@
 import { useEffect, useState } from "react";
 
 import Navbar from "../components/Navbar";
-import ShowCard from "../components/ShowCard";
+import ShowCard from "../components/Showcard";
+import FilterBar from "../components/FilterBar";
+import { useFilters } from "../hooks/useFilters";
+import { getMovies } from "../services/api";
 
 function Movies() {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const {
+    filters,
+    options,
+    filtered,
+    activeCount,
+    activeFilters,
+    toggleGenre,
+    updateFilter,
+    removeFilter,
+    resetFilters,
+  } = useFilters(movies);
+
   useEffect(() => {
     async function loadMovies() {
       try {
-        const response = await fetch(
-          "https://api.tvmaze.com/shows?page=0"
-        );
+        const data = await getMovies();
 
-        const data = await response.json();
-
-        const movieShows = data.filter(
-          (show) =>
-            show.genres?.includes("Drama") ||
-            show.genres?.includes("Action") ||
-            show.genres?.includes("Thriller") ||
-            show.genres?.includes("Adventure")
-        );
-
-        setMovies(movieShows);
+        setMovies(data);
       } catch (error) {
         console.error(error);
       } finally {
@@ -43,16 +46,35 @@ function Movies() {
 
         <h1>Movies</h1>
 
+        <FilterBar
+          options={options}
+          filters={filters}
+          activeCount={activeCount}
+          activeFilters={activeFilters}
+          onToggleGenre={toggleGenre}
+          onChange={updateFilter}
+          onRemoveFilter={removeFilter}
+          onReset={resetFilters}
+        />
+
         {loading && (
           <div className="loading">
             Loading movies...
           </div>
         )}
 
-        {!loading && (
+        {!loading && filtered.length === 0 && (
+          <p className="no-results">
+            {movies.length === 0
+              ? "No movies found."
+              : "No shows match your filters."}
+          </p>
+        )}
+
+        {!loading && filtered.length > 0 && (
           <div className="category-grid">
 
-            {movies.map((movie) => (
+            {filtered.map((movie) => (
               <ShowCard
                 key={movie.id}
                 show={movie}

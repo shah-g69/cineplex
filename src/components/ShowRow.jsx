@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import ShowCard from "./ShowCard";
+import ShowCard from "./Showcard";
 
 function ShowRow({ shows = [], ranked = false }) {
   const rowRef = useRef(null);

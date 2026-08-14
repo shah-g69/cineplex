@@ -1,14 +1,24 @@
 import { X } from "lucide-react";
 
-function TrailerPlayer({ videoUrl, onClose }) {
-  if (!videoUrl) {
-    return null;
-  }
+function TrailerPlayer({
+  videoUrl,
+  onClose,
+  loading = false,
+}) {
+  const isYouTube = videoUrl?.includes("/embed");
 
   return (
-    <div className="trailer-overlay">
+    <div
+      className="trailer-overlay"
+      onClick={onClose}
+    >
 
-      <div className="trailer-player">
+      <div
+        className="trailer-player"
+        onClick={(event) =>
+          event.stopPropagation()
+        }
+      >
 
         <button
           className="trailer-close"
@@ -18,12 +28,27 @@ function TrailerPlayer({ videoUrl, onClose }) {
           <X size={28} />
         </button>
 
-        <video
-          src={videoUrl}
-          controls
-          autoPlay
-          className="trailer-video"
-        />
+        {loading || !videoUrl ? (
+          <div className="trailer-loading">
+            <div className="trailer-spinner" />
+            Loading trailer...
+          </div>
+        ) : isYouTube ? (
+          <iframe
+            className="trailer-video"
+            src={videoUrl}
+            title="Trailer"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        ) : (
+          <video
+            src={videoUrl}
+            controls
+            autoPlay
+            className="trailer-video"
+          />
+        )}
 
       </div>
 

@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
+import { getShowById } from "../services/api";
 
 import {
   addToMyList,
   removeFromMyList,
   isInMyList,
 } from "../utils/myList";
+import { useTrailer } from "../context/TrailerContext";
 
 function ShowDetails() {
   const { id } = useParams();
@@ -15,18 +17,12 @@ function ShowDetails() {
   const [show, setShow] = useState(null);
   const [saved, setSaved] = useState(false);
 
+  const { playTrailer } = useTrailer();
+
   useEffect(() => {
     async function loadShow() {
       try {
-        const response = await fetch(
-          `https://api.tvmaze.com/shows/${id}`
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to load show");
-        }
-
-        const data = await response.json();
+        const data = await getShowById(id);
 
         setShow(data);
 
@@ -142,7 +138,10 @@ function ShowDetails() {
 
           <div className="details-buttons">
 
-            <button className="play-button">
+            <button
+              className="play-button"
+              onClick={() => playTrailer(show)}
+            >
               ▶ Play
             </button>
 
