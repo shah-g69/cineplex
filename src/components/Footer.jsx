@@ -53,6 +53,19 @@ function Footer() {
 
   return (
     <footer className="footer">
+
+      <div className="footer-brand">
+
+        <Link to="/" className="footer-logo">
+          CineFlix
+        </Link>
+
+        <p className="footer-tagline">
+          Your home for movies &amp; TV shows.
+        </p>
+
+      </div>
+
       <div className="footer-social">
         <a
           href="https://www.facebook.com"

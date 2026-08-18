@@ -13,13 +13,17 @@ import {
   isInMyList,
 } from "../utils/myList";
 import { useTrailer } from "../context/TrailerContext";
+import { useNotifications } from "../context/NotificationContext";
+import ConfirmDialog from "./ConfirmDialog";
 
 function ShowCard({ show }) {
   const [saved, setSaved] = useState(
     isInMyList(show.id)
   );
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const { playTrailer } = useTrailer();
+  const { notify } = useNotifications();
 
   const navigate = useNavigate();
 
@@ -30,13 +34,21 @@ function ShowCard({ show }) {
     if (saved) {
       removeFromMyList(show.id);
       setSaved(false);
+      notify(`${show.name} removed from My List`);
     } else {
-      addToMyList(show);
-      setSaved(true);
+      setConfirmOpen(true);
     }
   }
 
+  function confirmAdd() {
+    addToMyList(show);
+    setSaved(true);
+    setConfirmOpen(false);
+    notify(`${show.name} added to My List`);
+  }
+
   return (
+    <>
     <div className="show-card">
 
       <Link to={`/show/${show.id}`}>
@@ -127,6 +139,15 @@ function ShowCard({ show }) {
       </Link>
 
     </div>
+
+    {confirmOpen && (
+      <ConfirmDialog
+        message={`Add "${show.name}" to My List?`}
+        onConfirm={confirmAdd}
+        onCancel={() => setConfirmOpen(false)}
+      />
+    )}
+    </>
   );
 }
 

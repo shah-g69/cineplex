@@ -1,33 +1,27 @@
 import { useEffect, useState } from "react";
 
 import Navbar from "../components/Navbar";
-import ShowCard from "../components/Showcard";
-import FilterBar from "../components/FilterBar";
-import { useFilters } from "../hooks/useFilters";
-import { getMovies } from "../services/api";
+import ShowRow from "../components/ShowRow";
+import {
+  getMoviesByGenre,
+  MOVIE_GENRES,
+} from "../services/api";
 
 function Movies() {
-  const [movies, setMovies] = useState([]);
+  const [genreRows, setGenreRows] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const {
-    filters,
-    options,
-    filtered,
-    activeCount,
-    activeFilters,
-    toggleGenre,
-    updateFilter,
-    removeFilter,
-    resetFilters,
-  } = useFilters(movies);
 
   useEffect(() => {
     async function loadMovies() {
       try {
-        const data = await getMovies();
+        const rows = await Promise.all(
+          MOVIE_GENRES.map(async (genre) => ({
+            genre: genre.name,
+            shows: await getMoviesByGenre(genre.id),
+          }))
+        );
 
-        setMovies(data);
+        setGenreRows(rows);
       } catch (error) {
         console.error(error);
       } finally {
@@ -46,43 +40,32 @@ function Movies() {
 
         <h1>Movies</h1>
 
-        <FilterBar
-          options={options}
-          filters={filters}
-          activeCount={activeCount}
-          activeFilters={activeFilters}
-          onToggleGenre={toggleGenre}
-          onChange={updateFilter}
-          onRemoveFilter={removeFilter}
-          onReset={resetFilters}
-        />
-
         {loading && (
           <div className="loading">
             Loading movies...
           </div>
         )}
 
-        {!loading && filtered.length === 0 && (
+        {!loading && genreRows.length === 0 && (
           <p className="no-results">
-            {movies.length === 0
-              ? "No movies found."
-              : "No shows match your filters."}
+            No movies found.
           </p>
         )}
 
-        {!loading && filtered.length > 0 && (
-          <div className="category-grid">
+        {!loading &&
+          genreRows.map(
+            (row) =>
+              row.shows.length > 0 && (
+                <section
+                  className="genre-section"
+                  key={row.genre}
+                >
+                  <h1>{row.genre}</h1>
 
-            {filtered.map((movie) => (
-              <ShowCard
-                key={movie.id}
-                show={movie}
-              />
-            ))}
-
-          </div>
-        )}
+                  <ShowRow shows={row.shows} />
+                </section>
+              )
+          )}
 
       </main>
     </>

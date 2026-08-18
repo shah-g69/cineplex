@@ -8,6 +8,7 @@ import Footer from "./components/Footer";
 import FilterBar from "./components/FilterBar";
 import { useFilters } from "./hooks/useFilters";
 import { TrailerProvider } from "./context/TrailerContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import {
   getMovies,
   getTVShows,
@@ -171,6 +172,7 @@ function Home() {
 function App() {
   return (
     <TrailerProvider>
+    <NotificationProvider>
     <Routes>
     <Route
     path="/show/:id"
@@ -202,6 +204,7 @@ function App() {
     </Routes>
 
     <Footer />
+    </NotificationProvider>
     </TrailerProvider>
   );
 }

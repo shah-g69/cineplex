@@ -9,6 +9,7 @@ import {
   getMyList,
   removeFromMyList,
 } from "../utils/myList";
+import { useNotifications } from "../context/NotificationContext";
 
 function MyList() {
   const [shows, setShows] = useState(() =>
@@ -27,11 +28,21 @@ function MyList() {
     resetFilters,
   } = useFilters(shows);
 
+  const { notify } = useNotifications();
+
   function handleRemove(id) {
+    const removed = shows.find(
+      (show) => show.id === id
+    );
+
     const updatedList = removeFromMyList(id);
 
     setShows(updatedList);
     resetFilters();
+
+    if (removed) {
+      notify(`${removed.name} removed from My List`);
+    }
   }
 
   return (

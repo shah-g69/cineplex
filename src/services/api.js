@@ -188,6 +188,60 @@ export async function getTVShows(pages = 3) {
   return results;
 }
 
+// Major genres shown as carousels on the Movies / TV pages.
+// (TMDB genre ids, distinct for movies and TV.)
+export const MOVIE_GENRES = [
+  { id: 28, name: "Action" },
+  { id: 12, name: "Adventure" },
+  { id: 35, name: "Comedy" },
+  { id: 18, name: "Drama" },
+  { id: 27, name: "Horror" },
+  { id: 878, name: "Science Fiction" },
+  { id: 53, name: "Thriller" },
+  { id: 10749, name: "Romance" },
+  { id: 16, name: "Animation" },
+  { id: 80, name: "Crime" },
+];
+
+export const TV_GENRES = [
+  { id: 10759, name: "Action & Adventure" },
+  { id: 10765, name: "Sci-Fi & Fantasy" },
+  { id: 18, name: "Drama" },
+  { id: 35, name: "Comedy" },
+  { id: 9648, name: "Mystery" },
+  { id: 10751, name: "Family" },
+  { id: 16, name: "Animation" },
+  { id: 80, name: "Crime" },
+  { id: 10764, name: "Reality" },
+  { id: 10768, name: "War & Politics" },
+];
+
+async function discoverByGenre(type, genreId, pages = 2) {
+  const results = [];
+
+  for (let page = 1; page <= pages; page++) {
+    const data = await fetchJson(
+      `${TMDB_BASE}/discover/${type}?with_genres=${genreId}&sort_by=popularity.desc&page=${page}&api_key=${TMDB_API_KEY}`
+    );
+
+    results.push(
+      ...(await normalizeList(data.results, type))
+    );
+  }
+
+  return results;
+}
+
+// Movies / TV shows by genre — powers the genre carousels
+// on the Movies and TV pages.
+export async function getMoviesByGenre(genreId, pages = 2) {
+  return discoverByGenre("movie", genreId, pages);
+}
+
+export async function getTVShowsByGenre(genreId, pages = 2) {
+  return discoverByGenre("tv", genreId, pages);
+}
+
 export async function searchShows(query) {
   const data = await fetchJson(
     `${TMDB_BASE}/search/multi?query=${encodeURIComponent(

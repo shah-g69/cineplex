@@ -10,14 +10,18 @@ import {
   isInMyList,
 } from "../utils/myList";
 import { useTrailer } from "../context/TrailerContext";
+import { useNotifications } from "../context/NotificationContext";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 function ShowDetails() {
   const { id } = useParams();
 
   const [show, setShow] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const { playTrailer } = useTrailer();
+  const { notify } = useNotifications();
 
   useEffect(() => {
     async function loadShow() {
@@ -43,10 +47,17 @@ function ShowDetails() {
     if (saved) {
       removeFromMyList(show.id);
       setSaved(false);
+      notify(`${show.name} removed from My List`);
     } else {
-      addToMyList(show);
-      setSaved(true);
+      setConfirmOpen(true);
     }
+  }
+
+  function confirmAdd() {
+    addToMyList(show);
+    setSaved(true);
+    setConfirmOpen(false);
+    notify(`${show.name} added to My List`);
   }
 
   if (!show) {
@@ -158,6 +169,14 @@ function ShowDetails() {
 
         </div>
       </main>
+
+      {confirmOpen && (
+        <ConfirmDialog
+          message={`Add "${show.name}" to My List?`}
+          onConfirm={confirmAdd}
+          onCancel={() => setConfirmOpen(false)}
+        />
+      )}
     </>
   );
 }
